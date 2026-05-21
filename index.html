@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DuYaqi // view projects</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Orbitron', 'sans-serif'],
+            sans: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            cn: ['Noto Sans SC', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer base {
+      ::selection {
+        background-color: white;
+        color: black;
+      }
+      body {
+        @apply bg-black text-white overflow-x-hidden font-sans;
+      }
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .animate-shine {
+      animation: shine 2s ease-in-out infinite;
+    }
+  </style>
+
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- es-module-shims: 本地版本，避免 CDN 访问问题 -->
+  <script async src="./es-module-shims.js"></script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "framer-motion": "https://esm.sh/framer-motion@11.0.8?external=react,react-dom",
+        "lucide-react": "https://esm.sh/lucide-react@0.358.0?external=react"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect } from 'react';
+    import { createRoot } from 'react-dom/client';
+    import { motion, AnimatePresence } from 'framer-motion';
+    import { Maximize, Zap, ArrowLeft, ArrowRight, Sparkles, Home } from 'lucide-react';
+    
+    const BASE_URL = window.location.pathname.startsWith('/SHIGAO/') ? '/SHIGAO' : '';
+
+    const pageVariants = {
+      initial: { opacity: 0, filter: 'blur(10px)' },
+      animate: { opacity: 1, filter: 'blur(0px)', transition: { duration: 0.8, ease: 'easeOut' } },
+      exit: { opacity: 0, filter: 'blur(10px)', transition: { duration: 0.5, ease: 'easeIn' } }
+    };
+
+    const fadeUpVariants = {
+      initial: { opacity: 0, y: 30 },
+      animate: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.25, 0.1, 0.25, 1] } }
+    };
+
+    const staggerContainer = {
+      animate: { transition: { staggerChildren: 0.1 } }
+    };
+
+    const AnimatedText = ({ text, className = '' }) => {
+      const characters = text.split('');
+      return (
+        <motion.span className={className} variants={staggerContainer} initial="initial" animate="animate">
+          {characters.map((char, index) => (
+            <motion.span
+              key={index}
+              variants={{
+                initial: { opacity: 0, y: 20 },
+                animate: { 
+                  opacity: 1, 
+                  y: 0,
+                  transition: { 
+                    delay: index * 0.05,
+                    duration: 0.5
+                  }
+                }
+              }}
+              className="inline-block"
+            >
+              {char}
+            </motion.span>
+          ))}
+        </motion.span>
+      );
+    };
+
+    const HeroPage = ({ onNext }) => {
+      const [currentDate, setCurrentDate] = useState('');
+      const [isFullscreen, setIsFullscreen] = useState(false);
+
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          setIsFullscreen(true);
+        } else {
+          document.exitFullscreen();
+          setIsFullscreen(false);
+        }
+      };
+
+      useEffect(() => {
+        const handleFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      }, []);
+
+      useEffect(() => {
+        const updateDate = () => {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          setCurrentDate(`${year}.${month}.${day}`);
+        };
+        updateDate();
+        const timer = setInterval(updateDate, 60000);
+        return () => clearInterval(timer);
+      }, []);
+
+      return (
+        <motion.div
+          className="relative min-h-screen w-full flex flex-col justify-between"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <div className="absolute inset-0 z-0 h-[50vh] md:h-full w-full">
+            <video
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260304_101127_49ce07b7-f19a-4882-b19c-1d2a27d97ac3.mp4"
+              className="object-cover w-full h-full"
+              autoPlay
+              muted
+              playsInline
+              loop
+              preload="auto"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black md:hidden" />
+            <div className="hidden md:block absolute inset-0" style={{ background: 'radial-gradient(circle, transparent 30%, rgba(0,0,0,0.7) 100%)' }} />
+          </div>
+          
+          <nav className="relative z-10 w-full p-6 md:p-12 flex justify-between items-start">
+            <div className="flex gap-2 text-white/50">
+              <button 
+                onClick={toggleFullscreen}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                <Maximize size={20} />
+              </button>
+            </div>
+            <div className="flex flex-col items-end gap-4">
+              <div className="flex items-center gap-4">
+                <div className="h-[1px] w-12 bg-white/30" />
+                <span className="text-sm tracking-widest" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{currentDate}</span>
+              </div>
+              <button 
+                onClick={onNext}
+                className="text-xs uppercase tracking-widest hover:text-white/70 transition-colors flex items-center gap-2"
+                style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
+              >
+                View Projects <ArrowRight size={14} />
+              </button>
+            </div>
+          </nav>
+
+          <motion.main 
+            className="relative z-10 w-full px-6 md:px-12 flex flex-col md:flex-row justify-between items-end pb-8"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <div className="w-full md:w-2/3">
+              <motion.h1 variants={fadeUpVariants} className="font-display text-5xl md:text-8xl uppercase tracking-tighter leading-none mb-6">
+                <AnimatedText text="HELLO！" />
+              </motion.h1>
+              <motion.p variants={fadeUpVariants} className="font-cn font-light text-white/70 max-w-[450px] text-sm md:text-base leading-relaxed">
+                <span className="font-display font-semibold text-white text-lg">I AM Du Yaqi</span>
+                <br /><br />
+                6年设计经验，专注品牌视觉与数字界面
+                <br /><br />
+                我相信好的界面的高效的、可落地的
+                <br />
+                不追求多余的装饰，只解决问题
+              </motion.p>
+            </div>
+            <motion.div variants={fadeUpVariants} className="w-full md:w-1/3 mt-12 md:mt-0 flex flex-col gap-4 font-mono text-xs md:text-sm">
+              {[
+                { label: 'Name', value: '杜雅绮 / Du Yaqi' },
+                { label: 'Date of Birth', value: '1999.08.22' },
+                { label: 'Education', value: '本科/数字媒体艺术' },
+                { label: 'Work Experience', value: '6年设计师' }
+              ].map((spec) => (
+                <div key={spec.label} className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/50" style={{ fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif' }}>{spec.label}</span>
+                  <span className="text-xs" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{spec.value}</span>
+                </div>
+              ))}
+            </motion.div>
+          </motion.main>
+
+          <motion.footer 
+            className="relative z-10 w-full p-6 md:p-12 pt-0 flex flex-col md:flex-row justify-between items-end gap-8"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.button 
+              variants={fadeUpVariants}
+              onClick={onNext}
+              className="text-xs uppercase tracking-widest hover:text-white/70 transition-colors flex items-center gap-2"
+              style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
+            >
+              CATALOGS / 目录 <ArrowRight size={14} />
+            </motion.button>
+            <div className="flex items-center gap-8">
+              <motion.div variants={fadeUpVariants} className="flex flex-wrap gap-2 font-mono text-xs">
+                {['UI/UX交互设计师', 'FIGMA/SKETCH', 'PS/AI平面设计师', '品牌设计师'].map((tag) => (
+                  <motion.span 
+                    key={tag} 
+                    className="px-2 py-1 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm font-cn text-[10px]"
+                    whileHover={{ 
+                      scale: 1.05, 
+                      backgroundColor: 'rgba(255,255,255,0.15)',
+                      transition: { duration: 0.2 } 
+                    }}
+                  >
+                    {tag}
+                  </motion.span>
+                ))}
+              </motion.div>
+              <motion.button 
+                variants={fadeUpVariants} 
+                onClick={toggleFullscreen}
+                className="text-white/50 hover:text-white transition-colors cursor-pointer"
+              >
+                <Maximize size={20} />
+              </motion.button>
+            </div>
+          </motion.footer>
+        </motion.div>
+      );
+    };
+
+    const CategoryPage = ({ onBack, onSelectCategory }) => {
+      const [isFullscreen, setIsFullscreen] = useState(false);
+
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          setIsFullscreen(true);
+        } else {
+          document.exitFullscreen();
+          setIsFullscreen(false);
+        }
+      };
+
+      useEffect(() => {
+        const handleFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      }, []);
+
+      const categories = [
+        { id: 'graphic', number: '01', title: 'BRAND DESIGN', chinese: '品牌设计' },
+        { id: 'uiux', number: '02', title: 'UI DESIGN', chinese: 'UI设计' },
+        { id: 'web', number: '03', title: 'WEB DESIGN', chinese: '网页设计' },
+        { id: 'visual', number: '04', title: 'PACKAGING DESIGN', chinese: '包装设计' }
+      ];
+
+      return (
+        <motion.div
+          className="relative min-h-screen w-full flex flex-col justify-between bg-black"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 1.2 }}
+              className="absolute -top-[20%] -left-[10%] w-[60%] h-[80%]"
+              style={{
+                background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.6) 0%, rgba(59, 130, 246, 0.3) 40%, transparent 85%)',
+                filter: 'blur(80px)',
+                transform: 'rotate(20deg)',
+                transformOrigin: 'top left'
+              }}
+            />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 1.2 }}
+              className="absolute -top-[20%] -right-[10%] w-[60%] h-[80%]"
+              style={{
+                background: 'radial-gradient(ellipse at center, rgba(236, 159, 68, 0.6) 0%, rgba(59, 130, 246, 0.3) 40%, transparent 85%)',
+                filter: 'blur(80px)',
+                transform: 'rotate(-20deg)',
+                transformOrigin: 'top right'
+              }}
+            />
+          </div>
+
+          <nav className="relative z-10 w-full p-6 md:p-12 flex justify-between items-start">
+            <button 
+              onClick={onBack}
+              className="flex items-center gap-2 text-white/30 hover:text-white/70 transition-colors text-xs uppercase tracking-widest group"
+              style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
+            >
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+              Back to Home
+            </button>
+            <div className="text-white/30 font-mono text-[10px] uppercase tracking-widest text-right max-w-[200px]" style={{ fontFamily: 'Verdana, Geneva, sans-serif' }}>
+              Here are the types of projects that<br />have been done over the years,<br />including most of the design content.
+            </div>
+          </nav>
+
+          <motion.main 
+            className="relative z-10 w-full px-6 md:px-12 flex flex-col flex-grow justify-end pb-12"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div variants={fadeUpVariants} className="mb-12 text-right">
+              <div className="inline-block">
+                <span className="text-white/30 text-xs uppercase tracking-widest mb-2 block" style={{ fontFamily: 'Tahoma, Geneva, sans-serif' }}>[ 目录 ]</span>
+                <h1 className="font-display text-6xl md:text-8xl font-bold uppercase tracking-tighter leading-[0.9] text-right"
+                  style={{
+                    background: 'linear-gradient(180deg, #ffffff 0%, rgba(139, 92, 246, 0.8) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  <span className="block">WHAT CAN</span>
+                  <span className="block">I DO</span>
+                </h1>
+              </div>
+            </motion.div>
+            
+            <div className="flex flex-col gap-0">
+              {categories.map((category, index) => {
+                const isClickable = category.id === 'graphic' || category.id === 'web' || category.id === 'uiux';
+                return (
+                  <motion.div
+                    key={category.id}
+                    variants={fadeUpVariants}
+                    custom={index}
+                    whileHover={isClickable ? { backgroundColor: 'rgba(255,255,255,0.02)' } : {}}
+                    className={`flex items-center justify-between py-6 border-t border-white/10 ${isClickable ? 'cursor-pointer group transition-all duration-300' : ''}`}
+                    onClick={() => isClickable && onSelectCategory(category.id)}
+                  >
+                    <div className="flex items-center gap-8 md:gap-16">
+                      <span className="font-display text-4xl md:text-5xl font-bold text-white/80 w-16 md:w-20">
+                        {category.number}
+                      </span>
+                      <h2 className={`font-display text-2xl md:text-4xl font-bold uppercase tracking-tight ${isClickable ? 'text-white group-hover:text-white/80 transition-colors' : 'text-white'}`}>
+                        {category.title}
+                      </h2>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className={`font-cn text-sm md:text-base ${isClickable ? 'text-white/50 group-hover:text-white/70 transition-colors' : 'text-white/30'}`}>
+                        {category.chinese}
+                      </span>
+                      {isClickable && (
+                        <ArrowRight size={24} className="text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all duration-300" />
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.main>
+        </motion.div>
+      );
+    };
+
+    const WebDesignPage = ({ onBack }) => {
+      const [isFullscreen, setIsFullscreen] = useState(false);
+
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          setIsFullscreen(true);
+        } else {
+          document.exitFullscreen();
+          setIsFullscreen(false);
+        }
+      };
+
+      useEffect(() => {
+        const handleFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      }, []);
+
+      return (
+        <motion.div
+          className="relative min-h-screen w-full flex flex-col justify-between"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <div className="absolute inset-0 z-0 h-[50vh] md:h-full w-full">
+            <div className="absolute inset-0" style={{ backgroundImage: `url(${BASE_URL}/bg.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="hidden md:block absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.8) 100%)' }} />
+          </div>
+
+          <nav className="relative z-10 w-full p-6 md:p-12 flex justify-between items-start">
+            <motion.button 
+              onClick={onBack}
+              className="font-mono text-xs uppercase tracking-widest hover:text-white/70 transition-colors flex items-center gap-2 group"
+              whileHover={{ x: -4 }}
+              whileTap={{ scale: 0.95 }}
+              style={{ color: 'rgba(255,255,255,0.7)' }}
+            >
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+              
+            </motion.button>
+            <button 
+              onClick={toggleFullscreen}
+              className="text-white/50 hover:text-white transition-colors cursor-pointer"
+            >
+              <Maximize size={20} />
+            </button>
+          </nav>
+
+          <motion.main 
+            className="relative z-10 w-full px-6 md:px-12 flex flex-col md:flex-row justify-between items-center flex-grow"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div 
+              variants={fadeUpVariants} 
+              className="w-full md:w-2/3"
+            >
+              <motion.h1 
+                className="font-display text-6xl md:text-[10vw] leading-[0.85] uppercase tracking-tighter break-words"
+                whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
+              >
+                <motion.span
+                  animate={{ 
+                    textShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 20px rgba(255,255,255,0.5)', '0 0 0px rgba(255,255,255,0)'] 
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  Web Design
+                </motion.span>
+              </motion.h1>
+            </motion.div>
+            <motion.div variants={fadeUpVariants} className="w-full md:w-1/3 flex flex-col items-end text-right mt-12 md:mt-0">
+              <p className="font-cn font-light text-white/70 max-w-[450px] text-sm leading-relaxed mb-6" style={{ fontFamily: 'Verdana, Geneva, sans-serif' }}>
+                <span className="font-display font-semibold text-white text-lg block mb-4">
+                  网页设计精选项目
+                </span>
+                <br />
+                网站是品牌在线上的核心触点
+                <br />
+                每个项目，我都遵循同一套工作方法
+                <br />
+                理解业务&gt;梳理信息&gt;设计界面&gt;设计还原
+                <br /><br />
+                以下两个项目均为企业官网设计
+                <br />
+                由我独立完成从需求沟通到上线全部流程
+                <br />
+                目前已稳定运行，交付率100%
+                <br /><br />
+                <span className="font-display font-semibold text-white block mb-4">
+                  项目案例
+                </span>
+                <br />
+                contefj.com
+                <br />
+                企业品牌官网网页全案设计
+                <br /><br />
+                yufajiancai.com
+                <br />
+                建材行业官网·网页设计及小程序UI界面设计
+              </p>
+            </motion.div>
+          </motion.main>
+
+          <motion.footer 
+            className="relative z-10 w-full p-6 md:p-12 flex flex-col md:flex-row justify-between items-end gap-12"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <div className="flex flex-col md:flex-row gap-8 md:gap-24 w-full md:w-auto justify-start">
+              <motion.div variants={fadeUpVariants} className="flex flex-col gap-2">
+                <h3 className="font-sans font-semibold text-lg" style={{ fontFamily: '"Trebuchet MS", Helvetica, sans-serif' }}>01 // www.contefj.com</h3>
+                <p className="font-mono text-xs text-white/50 uppercase" style={{ fontFamily: 'Arial, sans-serif' }}>全屋定制 官网全案设计</p>
+                <a 
+                  href="https://www.contefj.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs border-b border-white/30 pb-1 self-start hover:text-white transition-colors mt-2"
+                  style={{ fontFamily: 'Verdana, Geneva, sans-serif' }}
+                >
+                  View Project →
+                </a>
+              </motion.div>
+              <motion.div variants={fadeUpVariants} className="flex flex-col gap-2">
+                <h3 className="font-sans font-semibold text-lg" style={{ fontFamily: '"Trebuchet MS", Helvetica, sans-serif' }}>02 // www.yufajiancai.com</h3>
+                <p className="font-mono text-xs text-white/50 uppercase" style={{ fontFamily: 'Arial, sans-serif' }}>建材 官网全案设计</p>
+                <a 
+                  href="https://www.yufajiancai.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs border-b border-white/30 pb-1 self-start hover:text-white transition-colors mt-2"
+                  style={{ fontFamily: 'Verdana, Geneva, sans-serif' }}
+                >
+                  View Project →
+                </a>
+              </motion.div>
+            </div>
+            <motion.button 
+              variants={fadeUpVariants}
+              onClick={() => onBack()}
+              className="text-white/50 hover:text-white transition-colors cursor-pointer flex items-center gap-2 font-mono text-xs uppercase tracking-widest"
+            >
+              <Home size={20} />
+            </motion.button>
+          </motion.footer>
+        </motion.div>
+      );
+    };
+
+    const UIUXDesignPage = ({ onBack }) => {
+      const [isFullscreen, setIsFullscreen] = useState(false);
+
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          setIsFullscreen(true);
+        } else {
+          document.exitFullscreen();
+          setIsFullscreen(false);
+        }
+      };
+
+      useEffect(() => {
+        const handleFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      }, []);
+
+      return (
+        <motion.div
+          className="relative min-h-screen w-full flex flex-col justify-between"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <div className="absolute inset-0 z-0 h-[50vh] md:h-full w-full">
+            <div className="absolute inset-0" style={{ backgroundImage: `url(${BASE_URL}/bg.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="hidden md:block absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.8) 100%)' }} />
+          </div>
+
+          <nav className="relative z-10 w-full p-6 md:p-12 flex justify-between items-start">
+            <motion.button 
+              onClick={onBack}
+              className="font-mono text-xs uppercase tracking-widest hover:text-white/70 transition-colors flex items-center gap-2 group"
+              whileHover={{ x: -4 }}
+              whileTap={{ scale: 0.95 }}
+              style={{ color: 'rgba(255,255,255,0.7)' }}
+            >
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+              
+            </motion.button>
+            <button 
+              onClick={toggleFullscreen}
+              className="text-white/50 hover:text-white transition-colors cursor-pointer"
+            >
+              <Maximize size={20} />
+            </button>
+          </nav>
+
+          <motion.main 
+            className="relative z-10 w-full px-6 md:px-12 flex flex-col justify-center flex-grow"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div 
+              className="w-full max-w-4xl mx-auto"
+              variants={fadeUpVariants}
+            >
+              <ImageGallery 
+                images={Array.from({ length: 14 }, (_, i) => `${BASE_URL}/ui-design/${i + 1}.jpg`)}
+              />
+            </motion.div>
+          </motion.main>
+        </motion.div>
+      );
+    };
+
+    const ImageGallery = ({ images }) => {
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [isLoading, setIsLoading] = useState(true);
+      const [error, setError] = useState(false);
+
+      useEffect(() => {
+        setIsLoading(true);
+        setError(false);
+      }, [currentIndex]);
+
+      const handleImageLoad = () => {
+        setIsLoading(false);
+      };
+
+      const handleImageError = () => {
+        setError(true);
+        setIsLoading(false);
+      };
+
+      const nextImage = () => {
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+      };
+
+      const prevImage = () => {
+        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+      };
+
+      return (
+        <div className="relative">
+          <div className="relative aspect-video md:aspect-[16/9] overflow-hidden rounded-lg bg-gray-900">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+              </div>
+            )}
+            {error ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                <span className="text-white/50 font-mono text-sm">Image failed to load</span>
+              </div>
+            ) : (
+              <motion.img
+                key={currentIndex}
+                src={images[currentIndex]}
+                alt={`Project ${currentIndex + 1}`}
+                className="w-full h-full object-cover"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          </div>
+
+          <div className="flex justify-center items-center gap-4 mt-6">
+            <button
+              onClick={prevImage}
+              className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            
+            <div className="flex gap-2">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentIndex ? 'bg-white w-6' : 'bg-white/30 hover:bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={nextImage}
+              className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
+            >
+              <ArrowRight size={18} />
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    const GraphicDesignPage = ({ onBack }) => {
+      const [isFullscreen, setIsFullscreen] = useState(false);
+
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          setIsFullscreen(true);
+        } else {
+          document.exitFullscreen();
+          setIsFullscreen(false);
+        }
+      };
+
+      useEffect(() => {
+        const handleFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      }, []);
+
+      const brandDesignImages = Array.from({ length: 33 }, (_, i) => 
+        `${BASE_URL}/brand-design/${i + 1}.jpg`
+      );
+
+      return (
+        <motion.div
+          className="relative min-h-screen w-full flex flex-col justify-between"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <div className="absolute inset-0 z-0 h-[50vh] md:h-full w-full">
+            <div className="absolute inset-0" style={{ backgroundImage: `url(${BASE_URL}/bg.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="hidden md:block absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.8) 100%)' }} />
+          </div>
+
+          <nav className="relative z-10 w-full p-6 md:p-12 flex justify-between items-start">
+            <motion.button 
+              onClick={onBack}
+              className="font-mono text-xs uppercase tracking-widest hover:text-white/70 transition-colors flex items-center gap-2 group"
+              whileHover={{ x: -4 }}
+              whileTap={{ scale: 0.95 }}
+              style={{ color: 'rgba(255,255,255,0.7)' }}
+            >
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+              
+            </motion.button>
+            <button 
+              onClick={toggleFullscreen}
+              className="text-white/50 hover:text-white transition-colors cursor-pointer"
+            >
+              <Maximize size={20} />
+            </button>
+          </nav>
+
+          <motion.main 
+            className="relative z-10 w-full px-6 md:px-12 flex flex-col justify-center flex-grow"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div 
+              className="w-full max-w-4xl mx-auto"
+              variants={fadeUpVariants}
+            >
+              <ImageGallery images={brandDesignImages} />
+            </motion.div>
+          </motion.main>
+        </motion.div>
+      );
+    };
+
+    const PhotoVideoPage = ({ onBack }) => {
+      const [isFullscreen, setIsFullscreen] = useState(false);
+
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          setIsFullscreen(true);
+        } else {
+          document.exitFullscreen();
+          setIsFullscreen(false);
+        }
+      };
+
+      useEffect(() => {
+        const handleFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      }, []);
+
+      return (
+        <motion.div
+          className="relative min-h-screen w-full flex flex-col justify-between"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <div className="absolute inset-0 z-0 h-[50vh] md:h-full w-full">
+            <div className="absolute inset-0" style={{ backgroundImage: `url(${BASE_URL}/bg.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="hidden md:block absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.8) 100%)' }} />
+          </div>
+
+          <nav className="relative z-10 w-full p-6 md:p-12 flex justify-between items-start">
+            <motion.button 
+              onClick={onBack}
+              className="font-mono text-xs uppercase tracking-widest hover:text-white/70 transition-colors flex items-center gap-2 group"
+              whileHover={{ x: -4 }}
+              whileTap={{ scale: 0.95 }}
+              style={{ color: 'rgba(255,255,255,0.7)' }}
+            >
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+              
+            </motion.button>
+            <button 
+              onClick={toggleFullscreen}
+              className="text-white/50 hover:text-white transition-colors cursor-pointer"
+            >
+              <Maximize size={20} />
+            </button>
+          </nav>
+
+          <motion.main 
+            className="relative z-10 w-full px-6 md:px-12 flex flex-col justify-center flex-grow"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div variants={fadeUpVariants}>
+              <h1 className="font-display text-6xl md:text-8xl uppercase tracking-tighter leading-none mb-8">
+                <AnimatedText text="PHOTO / VIDEO" />
+              </h1>
+              <p className="font-cn font-light text-white/70 max-w-[600px] text-sm md:text-base leading-relaxed">
+                这里可以展示摄影和剪辑相关的项目内容。
+                <br /><br />
+                你可以独立修改这个页面的内容，添加商业摄影、视频制作、新媒体剪辑等项目。
+              </p>
+            </motion.div>
+          </motion.main>
+        </motion.div>
+      );
+    };
+
+    const VisualDesignPage = ({ onBack }) => {
+      const [isFullscreen, setIsFullscreen] = useState(false);
+
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          setIsFullscreen(true);
+        } else {
+          document.exitFullscreen();
+          setIsFullscreen(false);
+        }
+      };
+
+      useEffect(() => {
+        const handleFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      }, []);
+
+      return (
+        <motion.div
+          className="relative min-h-screen w-full flex flex-col justify-between bg-black"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <div className="absolute inset-0 z-0 h-[50vh] md:h-full w-full">
+            <div className="absolute inset-0" style={{ backgroundImage: `url(${BASE_URL}/bg.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />
+            <div className="absolute inset-0 bg-black/30" />
+            <div className="hidden md:block absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.8) 100%)' }} />
+          </div>
+
+          <nav className="relative z-10 w-full p-6 md:p-12 flex justify-between items-start">
+            <motion.button 
+              onClick={onBack}
+              className="font-mono text-xs uppercase tracking-widest hover:text-white/70 transition-colors flex items-center gap-2 group"
+              whileHover={{ x: -4 }}
+              whileTap={{ scale: 0.95 }}
+              style={{ color: 'rgba(255,255,255,0.7)' }}
+            >
+              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+              
+            </motion.button>
+            <button 
+              onClick={toggleFullscreen}
+              className="text-white/50 hover:text-white transition-colors cursor-pointer"
+            >
+              <Maximize size={20} />
+            </button>
+          </nav>
+
+          <motion.main 
+            className="relative z-10 w-full px-6 md:px-12 flex flex-col justify-center flex-grow"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div 
+              className="w-full max-w-4xl mx-auto"
+              variants={fadeUpVariants}
+            >
+              <ImageGallery 
+                images={[
+                  `${BASE_URL}/brand-design/4.jpg`,
+                  `${BASE_URL}/brand-design/5.jpg`,
+                  `${BASE_URL}/brand-design/6.jpg`
+                ]}
+              />
+            </motion.div>
+          </motion.main>
+        </motion.div>
+      );
+    };
+
+    function App() {
+      const [currentPage, setCurrentPage] = useState('home');
+
+      const renderPage = () => {
+        switch(currentPage) {
+          case 'home':
+            return <HeroPage key="home" onNext={() => setCurrentPage('categories')} />;
+          case 'categories':
+            return <CategoryPage key="categories" onBack={() => setCurrentPage('home')} onSelectCategory={(cat) => setCurrentPage(cat)} />;
+          case 'web':
+            return <WebDesignPage key="web" onBack={() => setCurrentPage('categories')} />;
+          case 'uiux':
+            return <UIUXDesignPage key="uiux" onBack={() => setCurrentPage('categories')} />;
+          case 'graphic':
+            return <GraphicDesignPage key="graphic" onBack={() => setCurrentPage('categories')} />;
+          case 'visual':
+            return <VisualDesignPage key="visual" onBack={() => setCurrentPage('categories')} />;
+          default:
+            return <HeroPage key="home" onNext={() => setCurrentPage('categories')} />;
+        }
+      };
+
+      return (
+        <div className="bg-black min-h-screen overflow-hidden selection:bg-white selection:text-black">
+          <AnimatePresence mode="wait">
+            {renderPage()}
+          </AnimatePresence>
+        </div>
+      );
+    }
+
+    const root = createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
